@@ -7,12 +7,13 @@ interface Props {
   state: GameState
   myClientId: string
   myVote: number | "?" | null
+  isSpectator: boolean
   onVote: (value: number | "?") => void
   onReveal: () => void
   onSetStory: (story: string) => void
 }
 
-export default function VotingScreen({ state, myClientId, myVote, onVote, onReveal, onSetStory }: Props) {
+export default function VotingScreen({ state, myClientId, myVote, isSpectator, onVote, onReveal, onSetStory }: Props) {
   const { numericVoteCount, questionCount, totalPlayers, story, facilitatorClientId } = state
   const totalVoted = numericVoteCount + questionCount
   const isFacilitator = facilitatorClientId === myClientId
@@ -65,24 +66,28 @@ export default function VotingScreen({ state, myClientId, myVote, onVote, onReve
           />
         </div>
 
-        <div style={s.cardGrid}>
-          {FIBONACCI_VALUES.map((val) => {
-            const selected = myVote === val
-            return (
-              <button
-                key={String(val)}
-                style={{
-                  ...s.card,
-                  ...(selected ? s.cardSelected : {}),
-                }}
-                onClick={() => onVote(val as number | "?")}
-                aria-pressed={selected}
-              >
-                {val}
-              </button>
-            )
-          })}
-        </div>
+        {isSpectator ? (
+          <p style={s.spectatingHint}>You're spectating — votes are hidden until revealed.</p>
+        ) : (
+          <div style={s.cardGrid}>
+            {FIBONACCI_VALUES.map((val) => {
+              const selected = myVote === val
+              return (
+                <button
+                  key={String(val)}
+                  style={{
+                    ...s.card,
+                    ...(selected ? s.cardSelected : {}),
+                  }}
+                  onClick={() => onVote(val as number | "?")}
+                  aria-pressed={selected}
+                >
+                  {val}
+                </button>
+              )
+            })}
+          </div>
+        )}
 
         <div style={s.footer}>
           <button style={s.copyBtn} onClick={copyLink}>
@@ -183,6 +188,12 @@ const s: Record<string, React.CSSProperties> = {
     borderRadius: 8,
     fontSize: 13,
     cursor: "pointer",
+  },
+  spectatingHint: {
+    fontSize: 14,
+    color: "#555",
+    fontStyle: "italic",
+    textAlign: "center",
   },
   waitingHint: {
     fontSize: 13,

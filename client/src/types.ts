@@ -3,6 +3,7 @@ export interface PlayerView {
   name: string
   voted: boolean
   vote: number | "?" | null
+  isSpectator: boolean
 }
 
 export interface GameState {
@@ -10,6 +11,7 @@ export interface GameState {
   facilitatorClientId: string | null
   players: PlayerView[]
   story: string | null
+  roomName: string | null
   numericVoteCount: number
   questionCount: number
   totalPlayers: number

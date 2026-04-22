@@ -29,7 +29,7 @@ function handleJoin(
   ws: import("bun").ServerWebSocket<WsData>,
   msg: Extract<ClientMessage, { type: "join" }>
 ): void {
-  const { roomId, name, clientId } = msg
+  const { roomId, name, clientId, isSpectator = false, roomName } = msg
 
   if (!name || name.trim().length === 0) {
     sendError(ws, "name_required", "Name is required to join.")
@@ -37,6 +37,11 @@ function handleJoin(
   }
 
   const room = getOrCreateRoom(roomId)
+
+  // Set room name from first player who provides one
+  if (room.name === null && roomName) {
+    room.name = roomName.trim() || null
+  }
 
   // Attempt to recover a recently-disconnected session
   const recovered = recoverDisconnected(room, clientId, ws)
@@ -57,6 +62,7 @@ function handleJoin(
     name: name.trim(),
     ws,
     vote: null,
+    isSpectator,
   })
 
   // First player in the room becomes the facilitator

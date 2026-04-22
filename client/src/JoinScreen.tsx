@@ -2,11 +2,13 @@ import { useRef, useState } from "react"
 import { LS_NAME } from "../../shared/constants"
 
 interface Props {
-  onJoin: (name: string) => void
+  roomName: string | null
+  onJoin: (name: string, isSpectator: boolean) => void
 }
 
-export default function JoinScreen({ onJoin }: Props) {
+export default function JoinScreen({ roomName, onJoin }: Props) {
   const [name, setName] = useState(localStorage.getItem(LS_NAME) ?? "")
+  const [isSpectator, setIsSpectator] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -16,16 +18,16 @@ export default function JoinScreen({ onJoin }: Props) {
       inputRef.current?.focus()
       return
     }
-    onJoin(trimmed)
+    onJoin(trimmed, isSpectator)
   }
-
-  const roomId = window.location.pathname.match(/^\/r\/([a-zA-Z0-9]+)$/)?.[1]
 
   return (
     <div style={s.page}>
       <div style={s.card}>
         <h1 style={s.title}>Pointr</h1>
-        {roomId && <p style={s.roomId}>Room <code style={s.code}>{roomId}</code></p>}
+        {roomName && (
+          <p style={s.roomName}>{roomName}</p>
+        )}
         <form onSubmit={handleSubmit} style={s.form}>
           <label style={s.label} htmlFor="name">Your name</label>
           <input
@@ -39,6 +41,16 @@ export default function JoinScreen({ onJoin }: Props) {
             autoFocus
             maxLength={40}
           />
+          <label style={s.spectatorLabel}>
+            <input
+              type="checkbox"
+              checked={isSpectator}
+              onChange={(e) => setIsSpectator(e.target.checked)}
+              style={s.checkbox}
+            />
+            <span>Join as spectator</span>
+            <span style={s.spectatorHint}> — watch without voting</span>
+          </label>
           <button style={s.button} type="submit">
             Join room
           </button>
@@ -72,17 +84,12 @@ const s: Record<string, React.CSSProperties> = {
     color: "#e8eaf0",
     textAlign: "center",
   },
-  roomId: {
-    fontSize: 13,
-    color: "#666",
+  roomName: {
+    fontSize: 15,
+    color: "#7db8f7",
     textAlign: "center",
-  },
-  code: {
-    fontFamily: "monospace",
-    color: "#888",
-    background: "#111",
-    padding: "2px 6px",
-    borderRadius: 4,
+    fontWeight: 500,
+    marginTop: -12,
   },
   form: {
     display: "flex",
@@ -103,6 +110,25 @@ const s: Record<string, React.CSSProperties> = {
     color: "#e8eaf0",
     outline: "none",
     transition: "border-color 0.15s",
+  },
+  spectatorLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    fontSize: 13,
+    color: "#aaa",
+    cursor: "pointer",
+    userSelect: "none",
+  },
+  checkbox: {
+    accentColor: "#4f8ef7",
+    width: 15,
+    height: 15,
+    cursor: "pointer",
+    flexShrink: 0,
+  },
+  spectatorHint: {
+    color: "#555",
   },
   button: {
     marginTop: 4,

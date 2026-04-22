@@ -1,20 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { LS_CLIENT_ID, LS_NAME } from "../../shared/constants"
 import type { GameState } from "./types"
+import HomeScreen from "./HomeScreen"
 import JoinScreen from "./JoinScreen"
 import VotingScreen from "./VotingScreen"
 import RevealedScreen from "./RevealedScreen"
 
-function getRoomId(): string {
+function getRoomIdFromUrl(): string | null {
   const match = window.location.pathname.match(/^\/r\/([a-zA-Z0-9]+)$/)
-  if (match) return match[1]
+  return match ? match[1] : null
+}
 
-  const id = Array.from(crypto.getRandomValues(new Uint8Array(9)))
+function getRoomNameFromUrl(): string | null {
+  return new URLSearchParams(window.location.search).get("name")
+}
+
+function generateRoomId(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(9)))
     .map((b) => b.toString(36).padStart(2, "0"))
     .join("")
     .slice(0, 12)
-  window.history.replaceState(null, "", `/r/${id}`)
-  return id
 }
 
 function getOrCreateClientId(): string {
@@ -34,30 +39,31 @@ const WS_URL =
 const BACKOFF_STEPS = [1000, 2000, 4000, 10000]
 
 export default function App() {
-  const roomId = useRef(getRoomId())
-  const clientId = useRef(getOrCreateClientId())
-
+  // "home" = landing, "join" = name/spectator entry, "room" = in the game
+  const [screen, setScreen] = useState<"home" | "join" | "room">(
+    getRoomIdFromUrl() ? "join" : "home"
+  )
   const [joined, setJoined] = useState(false)
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [connected, setConnected] = useState(false)
   const [myVote, setMyVote] = useState<number | "?" | null>(null)
 
-  const wsRef = useRef<WebSocket | null>(null)
+  const roomIdRef = useRef(getRoomIdFromUrl() ?? "")
+  const roomNameRef = useRef(getRoomNameFromUrl())
+  const clientId = useRef(getOrCreateClientId())
   const nameRef = useRef(localStorage.getItem(LS_NAME) ?? "")
-  const hasJoinedRef = useRef(false) // true only after user explicitly clicks Join
+  const hasJoinedRef = useRef(false)
+  const isSpectatorRef = useRef(false)
   const backoffIdx = useRef(0)
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wsRef = useRef<WebSocket | null>(null)
 
-  // Stable send — only delivers if socket is open
   const send = useCallback((msg: object) => {
     const ws = wsRef.current
     if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg))
   }, [])
 
   useEffect(() => {
-    // `cancelled` is local to this effect invocation.
-    // StrictMode's cleanup sets its own cancelled=true without poisoning the
-    // second invocation's closure, which starts with its own cancelled=false.
     let cancelled = false
 
     const connect = () => {
@@ -69,17 +75,14 @@ export default function App() {
       ws.onopen = () => {
         backoffIdx.current = 0
         setConnected(true)
-        // Re-send join on reconnect — but only if the user already explicitly joined.
-        // nameRef alone is not enough: it's pre-populated from localStorage on mount,
-        // which would auto-join before the user confirms their name.
         if (hasJoinedRef.current && nameRef.current) {
           ws.send(JSON.stringify({
             type: "join",
-            roomId: roomId.current,
+            roomId: roomIdRef.current,
             name: nameRef.current,
             clientId: clientId.current,
+            isSpectator: isSpectatorRef.current,
           }))
-          setJoined(true)
         }
       }
 
@@ -94,7 +97,7 @@ export default function App() {
         if (msg.type === "state") {
           const state = msg as unknown as GameState
           setGameState(state)
-          // Sync myVote from server on reconnect during revealed phase
+          setScreen("room")
           const me = state.players.find((p) => p.clientId === clientId.current)
           if (me && state.phase === "revealed") setMyVote(me.vote)
         }
@@ -122,13 +125,30 @@ export default function App() {
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current)
       wsRef.current?.close()
     }
-  }, []) // connection lifecycle is intentionally mount-scoped
+  }, [])
 
-  const joinRoom = useCallback((name: string) => {
+  const createRoom = useCallback((roomName: string) => {
+    const id = generateRoomId()
+    roomIdRef.current = id
+    roomNameRef.current = roomName || null
+    const q = roomName ? `?name=${encodeURIComponent(roomName)}` : ""
+    window.history.pushState(null, "", `/r/${id}${q}`)
+    setScreen("join")
+  }, [])
+
+  const joinRoom = useCallback((name: string, isSpectator: boolean) => {
     nameRef.current = name
     hasJoinedRef.current = true
+    isSpectatorRef.current = isSpectator
     localStorage.setItem(LS_NAME, name)
-    send({ type: "join", roomId: roomId.current, name, clientId: clientId.current })
+    send({
+      type: "join",
+      roomId: roomIdRef.current,
+      name,
+      clientId: clientId.current,
+      isSpectator,
+      roomName: roomNameRef.current,
+    })
     setJoined(true)
   }, [send])
 
@@ -148,7 +168,18 @@ export default function App() {
     send({ type: "set_story", story })
   }, [send])
 
-  if (!joined) return <JoinScreen onJoin={joinRoom} />
+  if (screen === "home") {
+    return <HomeScreen onCreateRoom={createRoom} />
+  }
+
+  if (screen === "join" || !joined) {
+    return (
+      <JoinScreen
+        roomName={gameState?.roomName ?? roomNameRef.current}
+        onJoin={joinRoom}
+      />
+    )
+  }
 
   if (!connected) {
     return (
@@ -166,6 +197,8 @@ export default function App() {
     )
   }
 
+  const isSpectator = isSpectatorRef.current
+
   if (gameState.phase === "revealed") {
     return (
       <RevealedScreen
@@ -181,6 +214,7 @@ export default function App() {
       state={gameState}
       myClientId={clientId.current}
       myVote={myVote}
+      isSpectator={isSpectator}
       onVote={vote}
       onReveal={reveal}
       onSetStory={setStory}

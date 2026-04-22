@@ -2,7 +2,7 @@ import type { CardValue } from "../shared/constants"
 
 // Client → Server
 export type ClientMessage =
-  | { type: "join"; roomId: string; name: string; clientId: string }
+  | { type: "join"; roomId: string; name: string; clientId: string; isSpectator?: boolean; roomName?: string | null }
   | { type: "vote"; value: CardValue }
   | { type: "reveal" }
   | { type: "reset"; story?: string }
@@ -15,6 +15,7 @@ export interface StateMessage {
   facilitatorClientId: string | null
   players: PlayerView[]
   story: string | null
+  roomName: string | null
   numericVoteCount: number
   questionCount: number
   totalPlayers: number
@@ -26,6 +27,7 @@ export interface PlayerView {
   name: string
   voted: boolean
   vote: number | "?" | null // null when phase=voting (hidden)
+  isSpectator: boolean
 }
 
 // Server → Sending client only

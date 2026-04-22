@@ -43,22 +43,27 @@ function PlayerRow({
     typeof player.vote === "number" &&
     Math.abs(player.vote - median) >= 3
 
+  const dotColor = player.isSpectator ? "#3a3d4a" : player.voted ? "#4caf50" : "#f59e0b"
+
   return (
     <li style={s.row}>
-      <span style={{ ...s.dot, background: player.voted ? "#4caf50" : "#f59e0b" }} />
+      <span style={{ ...s.dot, background: dotColor }} />
       <span style={{ ...s.name, color: isMe ? "#7db8f7" : "#e8eaf0" }}>
         {player.name}
         {isMe && <span style={s.youBadge}> you</span>}
+        {player.isSpectator && <span style={s.spectatorBadge}> 👁</span>}
       </span>
-      <span style={{ ...s.vote, ...(isOutlier ? s.outlier : {}) }}>
-        {phase === "voting"
-          ? player.voted
-            ? <span style={s.block}>██</span>
-            : <span style={s.pending}>—</span>
-          : player.vote !== null
-            ? player.vote
-            : <span style={s.pending}>—</span>}
-      </span>
+      {!player.isSpectator && (
+        <span style={{ ...s.vote, ...(isOutlier ? s.outlier : {}) }}>
+          {phase === "voting"
+            ? player.voted
+              ? <span style={s.block}>██</span>
+              : <span style={s.pending}>—</span>
+            : player.vote !== null
+              ? player.vote
+              : <span style={s.pending}>—</span>}
+        </span>
+      )}
     </li>
   )
 }
@@ -122,6 +127,10 @@ const s: Record<string, React.CSSProperties> = {
     fontSize: 10,
     color: "#666",
     fontWeight: 400,
+  },
+  spectatorBadge: {
+    fontSize: 11,
+    opacity: 0.5,
   },
   vote: {
     fontSize: 14,

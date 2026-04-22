@@ -14,6 +14,7 @@ export interface Player {
   name: string
   ws: ServerWebSocket<{ clientId: string; roomId: string }>
   vote: CardValue | null
+  isSpectator: boolean
 }
 
 interface DisconnectedEntry {
@@ -24,6 +25,7 @@ interface DisconnectedEntry {
 
 export interface Room {
   id: string
+  name: string | null
   story: string | null
   phase: "voting" | "revealed"
   facilitatorClientId: string | null
@@ -39,6 +41,7 @@ export function getOrCreateRoom(roomId: string): Room {
   if (!room) {
     room = {
       id: roomId,
+      name: null,
       story: null,
       phase: "voting",
       facilitatorClientId: null,
@@ -140,7 +143,7 @@ function nearestFibonacci(value: number): number {
 export function computeMedian(room: Room): number | null {
   const numeric: number[] = []
   for (const p of room.players.values()) {
-    if (typeof p.vote === "number") numeric.push(p.vote)
+    if (!p.isSpectator && typeof p.vote === "number") numeric.push(p.vote)
   }
   if (numeric.length === 0) return null
 
@@ -158,18 +161,23 @@ export function buildStateMessage(room: Room): StateMessage {
   const players: PlayerView[] = []
   let numericVoteCount = 0
   let questionCount = 0
+  let totalVoters = 0
 
   for (const p of room.players.values()) {
     const voted = p.vote !== null
-    if (voted) {
-      if (p.vote === "?") questionCount++
-      else numericVoteCount++
+    if (!p.isSpectator) {
+      totalVoters++
+      if (voted) {
+        if (p.vote === "?") questionCount++
+        else numericVoteCount++
+      }
     }
     players.push({
       clientId: p.clientId,
       name: p.name,
-      voted,
-      vote: room.phase === "revealed" ? p.vote : null,
+      voted: !p.isSpectator && voted,
+      vote: room.phase === "revealed" && !p.isSpectator ? p.vote : null,
+      isSpectator: p.isSpectator,
     })
   }
 
@@ -179,9 +187,10 @@ export function buildStateMessage(room: Room): StateMessage {
     facilitatorClientId: room.facilitatorClientId,
     players,
     story: room.story,
+    roomName: room.name,
     numericVoteCount,
     questionCount,
-    totalPlayers: room.players.size,
+    totalPlayers: totalVoters,
     median,
   }
 }
