@@ -1,0 +1,12 @@
+{
+  "name": "pointr",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"bun run --hot server/index.ts\" \"cd client && bun run dev\"",
+    "build": "cd client && bun run build",
+    "start": "bun run server/index.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}

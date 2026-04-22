@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.gstack/
+bun.lock
+*.log
+.DS_Store
