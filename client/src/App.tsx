@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { LS_CLIENT_ID, LS_IS_SPECTATOR, LS_NAME } from "../../shared/constants"
+import { LS_CLIENT_ID, LS_IS_SPECTATOR, LS_NAME, LS_ROOM_ID } from "../../shared/constants"
 import type { GameState } from "./types"
 import HomeScreen from "./HomeScreen"
 import JoinScreen from "./JoinScreen"
@@ -45,7 +45,8 @@ const BACKOFF_STEPS = [1000, 2000, 4000, 10000]
 export default function App() {
   const _roomId = getRoomIdFromUrl()
   const _savedName = localStorage.getItem(LS_NAME) ?? ""
-  const _autoJoin = !!(_roomId && _savedName)
+  const _savedRoomId = localStorage.getItem(LS_ROOM_ID) ?? ""
+  const _autoJoin = !!(_roomId && _savedName && _roomId === _savedRoomId)
 
   // "home" = landing, "join" = name/spectator entry, "room" = in the game, "not-found" = bad room URL
   const [screen, setScreen] = useState<"home" | "join" | "room" | "not-found">(
@@ -151,6 +152,7 @@ export default function App() {
     isSpectatorRef.current = isSpectator
     localStorage.setItem(LS_NAME, name)
     localStorage.setItem(LS_IS_SPECTATOR, String(isSpectator))
+    localStorage.setItem(LS_ROOM_ID, roomIdRef.current)
     send({
       type: "join",
       roomId: roomIdRef.current,
@@ -189,6 +191,7 @@ export default function App() {
     localStorage.removeItem(LS_NAME)
     localStorage.removeItem(LS_IS_SPECTATOR)
     localStorage.removeItem(LS_CLIENT_ID)
+    localStorage.removeItem(LS_ROOM_ID)
     window.location.href = "/"
   }, [])
 
