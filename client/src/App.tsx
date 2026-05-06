@@ -11,6 +11,10 @@ function getRoomIdFromUrl(): string | null {
   return match ? match[1] : null
 }
 
+function isRoomPath(): boolean {
+  return /^\/r\//.test(window.location.pathname)
+}
+
 function getRoomNameFromUrl(): string | null {
   return new URLSearchParams(window.location.search).get("name")
 }
@@ -39,9 +43,9 @@ const WS_URL =
 const BACKOFF_STEPS = [1000, 2000, 4000, 10000]
 
 export default function App() {
-  // "home" = landing, "join" = name/spectator entry, "room" = in the game
-  const [screen, setScreen] = useState<"home" | "join" | "room">(
-    getRoomIdFromUrl() ? "join" : "home"
+  // "home" = landing, "join" = name/spectator entry, "room" = in the game, "not-found" = bad room URL
+  const [screen, setScreen] = useState<"home" | "join" | "room" | "not-found">(
+    getRoomIdFromUrl() ? "join" : isRoomPath() ? "not-found" : "home"
   )
   const [joined, setJoined] = useState(false)
   const [gameState, setGameState] = useState<GameState | null>(null)
@@ -167,6 +171,18 @@ export default function App() {
   const setStory = useCallback((story: string) => {
     send({ type: "set_story", story })
   }, [send])
+
+  if (screen === "not-found") {
+    return (
+      <div style={styles.overlay}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ color: "#e8eaf0", fontSize: 20, fontWeight: 600, marginBottom: 12 }}>Room not found</p>
+          <p style={{ color: "#666", fontSize: 14, marginBottom: 24 }}>This link may be invalid or the room may no longer exist.</p>
+          <a href="/" style={{ color: "#4f8ef7", fontSize: 14 }}>Create a new room →</a>
+        </div>
+      </div>
+    )
+  }
 
   if (screen === "home") {
     return <HomeScreen onCreateRoom={createRoom} />
