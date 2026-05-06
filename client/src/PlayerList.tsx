@@ -6,10 +6,11 @@ interface Props {
 }
 
 export default function PlayerList({ state, myClientId }: Props) {
-  const { players, phase, median, facilitatorClientId } = state
+  const { players, phase, median, facilitatorClientId, roomName } = state
 
   return (
     <aside style={s.aside} className="player-sidebar">
+      {roomName && <p style={s.roomName}>{roomName}</p>}
       <h2 style={s.heading}>Players <span style={s.count}>{players.length}</span></h2>
       <ul style={s.list}>
         {players.map((p) => (
@@ -80,6 +81,15 @@ const s: Record<string, React.CSSProperties> = {
     borderRight: "1px solid #2a2d3a",
     padding: "24px 16px",
     overflowY: "auto",
+  },
+  roomName: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#e8eaf0",
+    marginBottom: 16,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   heading: {
     fontSize: 12,
