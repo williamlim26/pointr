@@ -185,6 +185,13 @@ export default function App() {
     setMyVote(null)
   }, [])
 
+  const exitRoom = useCallback(() => {
+    localStorage.removeItem(LS_NAME)
+    localStorage.removeItem(LS_IS_SPECTATOR)
+    localStorage.removeItem(LS_CLIENT_ID)
+    window.location.href = "/"
+  }, [])
+
   if (screen === "not-found") {
     return (
       <div style={styles.overlay}>
@@ -228,6 +235,8 @@ export default function App() {
 
   const isSpectator = isSpectatorRef.current
 
+  const isFacilitator = gameState.facilitatorClientId === clientId.current
+
   if (gameState.phase === "revealed") {
     return (
       <RevealedScreen
@@ -235,6 +244,7 @@ export default function App() {
         myClientId={clientId.current}
         onReset={reset}
         onLeave={leaveRoom}
+        onExit={isFacilitator ? undefined : exitRoom}
       />
     )
   }
@@ -249,6 +259,7 @@ export default function App() {
       onReveal={reveal}
       onSetStory={setStory}
       onLeave={leaveRoom}
+      onExit={isFacilitator ? undefined : exitRoom}
     />
   )
 }

@@ -7,9 +7,10 @@ interface Props {
   myClientId: string
   onReset: (story?: string) => void
   onLeave: () => void
+  onExit?: () => void
 }
 
-export default function RevealedScreen({ state, myClientId, onReset, onLeave }: Props) {
+export default function RevealedScreen({ state, myClientId, onReset, onLeave, onExit }: Props) {
   const { median, players, questionCount, story, facilitatorClientId } = state
   const isFacilitator = facilitatorClientId === myClientId
   const [nextStory, setNextStory] = useState("")
@@ -97,6 +98,11 @@ export default function RevealedScreen({ state, myClientId, onReset, onLeave }: 
         <button style={s.leaveBtn} onClick={onLeave}>
           Change role
         </button>
+        {onExit && (
+          <button style={s.exitBtn} onClick={onExit}>
+            Exit room
+          </button>
+        )}
       </main>
     </div>
   )
@@ -196,6 +202,15 @@ const s: Record<string, React.CSSProperties> = {
     background: "transparent",
     color: "#555",
     border: "1px solid #2a2d3a",
+    borderRadius: 8,
+    fontSize: 13,
+    cursor: "pointer",
+  },
+  exitBtn: {
+    padding: "8px 16px",
+    background: "transparent",
+    color: "#c0392b",
+    border: "1px solid rgba(192,57,43,0.35)",
     borderRadius: 8,
     fontSize: 13,
     cursor: "pointer",

@@ -12,9 +12,10 @@ interface Props {
   onReveal: () => void
   onSetStory: (story: string) => void
   onLeave: () => void
+  onExit?: () => void
 }
 
-export default function VotingScreen({ state, myClientId, myVote, isSpectator, onVote, onReveal, onSetStory, onLeave }: Props) {
+export default function VotingScreen({ state, myClientId, myVote, isSpectator, onVote, onReveal, onSetStory, onLeave, onExit }: Props) {
   const { numericVoteCount, questionCount, totalPlayers, story, facilitatorClientId } = state
   const totalVoted = numericVoteCount + questionCount
   const isFacilitator = facilitatorClientId === myClientId
@@ -97,6 +98,11 @@ export default function VotingScreen({ state, myClientId, myVote, isSpectator, o
           <button style={s.leaveBtn} onClick={onLeave}>
             Change role
           </button>
+          {onExit && (
+            <button style={s.exitBtn} onClick={onExit}>
+              Exit room
+            </button>
+          )}
           <span style={s.voteCount}>
             {totalVoted} / {totalPlayers} voted
           </span>
@@ -198,6 +204,15 @@ const s: Record<string, React.CSSProperties> = {
     background: "transparent",
     color: "#555",
     border: "1px solid #2a2d3a",
+    borderRadius: 8,
+    fontSize: 13,
+    cursor: "pointer",
+  },
+  exitBtn: {
+    padding: "10px 16px",
+    background: "transparent",
+    color: "#c0392b",
+    border: "1px solid rgba(192,57,43,0.35)",
     borderRadius: 8,
     fontSize: 13,
     cursor: "pointer",
