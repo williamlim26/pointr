@@ -9,12 +9,14 @@ interface Props {
 export default function JoinScreen({ roomName, onJoin }: Props) {
   const [name, setName] = useState(localStorage.getItem(LS_NAME) ?? "")
   const [isSpectator, setIsSpectator] = useState(false)
+  const [error, setError] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = name.trim()
     if (!trimmed) {
+      setError("Please enter your name")
       inputRef.current?.focus()
       return
     }
@@ -33,14 +35,15 @@ export default function JoinScreen({ roomName, onJoin }: Props) {
           <input
             id="name"
             ref={inputRef}
-            style={s.input}
+            style={{ ...s.input, ...(error ? { borderColor: "#ef4444" } : {}) }}
             type="text"
             placeholder="Enter your name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => { setName(e.target.value); if (error) setError("") }}
             autoFocus
             maxLength={40}
           />
+          {error && <span style={s.errorMsg}>{error}</span>}
           <label style={s.spectatorLabel}>
             <input
               type="checkbox"
@@ -129,6 +132,11 @@ const s: Record<string, React.CSSProperties> = {
   },
   spectatorHint: {
     color: "#555",
+  },
+  errorMsg: {
+    fontSize: 13,
+    color: "#ef4444",
+    marginTop: -4,
   },
   button: {
     marginTop: 4,
