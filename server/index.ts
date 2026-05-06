@@ -144,6 +144,23 @@ function handleSetStory(
   broadcastState(room)
 }
 
+function handleCloseRoom(ws: import("bun").ServerWebSocket<WsData>): void {
+  const room = getRoom(ws.data.roomId)
+  if (!room) return
+
+  if (room.facilitatorClientId !== ws.data.clientId) {
+    sendError(ws, "invalid_message", "Only the facilitator can close the room.")
+    return
+  }
+
+  const msg = JSON.stringify({ type: "room_closed" })
+  for (const player of room.players.values()) {
+    try { player.ws.send(msg) } catch {}
+  }
+
+  removeRoom(ws.data.roomId)
+}
+
 const server = Bun.serve<WsData>({
   port: PORT,
 
@@ -192,6 +209,7 @@ const server = Bun.serve<WsData>({
         case "reveal":     return handleReveal(ws)
         case "reset":      return handleReset(ws, msg)
         case "set_story":  return handleSetStory(ws, msg)
+        case "close_room": return handleCloseRoom(ws)
         default:
           sendError(ws, "invalid_message", `Unknown message type: ${(msg as { type: string }).type}`)
       }

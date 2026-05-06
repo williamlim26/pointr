@@ -115,6 +115,14 @@ export default function App() {
         if (msg.type === "error") {
           console.warn("Server error:", msg.code, msg.message)
         }
+
+        if (msg.type === "room_closed") {
+          localStorage.removeItem(LS_NAME)
+          localStorage.removeItem(LS_IS_SPECTATOR)
+          localStorage.removeItem(LS_CLIENT_ID)
+          localStorage.removeItem(LS_ROOM_ID)
+          window.location.href = "/"
+        }
       }
 
       ws.onclose = () => {
@@ -187,6 +195,10 @@ export default function App() {
     setMyVote(null)
   }, [])
 
+  const closeRoom = useCallback(() => {
+    send({ type: "close_room" })
+  }, [send])
+
   const exitRoom = useCallback(() => {
     localStorage.removeItem(LS_NAME)
     localStorage.removeItem(LS_IS_SPECTATOR)
@@ -247,7 +259,7 @@ export default function App() {
         myClientId={clientId.current}
         onReset={reset}
         onLeave={leaveRoom}
-        onExit={isFacilitator ? undefined : exitRoom}
+        onExit={isFacilitator ? closeRoom : exitRoom}
       />
     )
   }
@@ -262,7 +274,7 @@ export default function App() {
       onReveal={reveal}
       onSetStory={setStory}
       onLeave={leaveRoom}
-      onExit={isFacilitator ? undefined : exitRoom}
+      onExit={isFacilitator ? closeRoom : exitRoom}
     />
   )
 }

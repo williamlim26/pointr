@@ -7,6 +7,7 @@ export type ClientMessage =
   | { type: "reveal" }
   | { type: "reset"; story?: string }
   | { type: "set_story"; story: string }
+  | { type: "close_room" }
 
 // Server → All clients in room
 export interface StateMessage {
@@ -37,4 +38,8 @@ export interface ErrorMessage {
   message: string
 }
 
-export type ServerMessage = StateMessage | ErrorMessage
+export interface RoomClosedMessage {
+  type: "room_closed"
+}
+
+export type ServerMessage = StateMessage | ErrorMessage | RoomClosedMessage
