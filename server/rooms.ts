@@ -59,9 +59,9 @@ export function getRoom(roomId: string): Room | undefined {
 }
 
 export function addPlayer(room: Room, player: Player): void {
-  // clientId collision: last-join wins — disconnect the existing session
+  // clientId collision: last-join wins — disconnect the existing session unless it's the same socket
   const existing = room.players.get(player.clientId)
-  if (existing) {
+  if (existing && existing.ws !== player.ws) {
     try {
       existing.ws.close(1000, "replaced by new session")
     } catch {}
@@ -73,7 +73,8 @@ export function addPlayer(room: Room, player: Player): void {
 export function recoverDisconnected(
   room: Room,
   clientId: string,
-  newWs: ServerWebSocket<{ clientId: string; roomId: string }>
+  newWs: ServerWebSocket<{ clientId: string; roomId: string }>,
+  isSpectator: boolean
 ): Player | null {
   const entry = room.disconnected.get(clientId)
   if (!entry) return null
@@ -81,7 +82,7 @@ export function recoverDisconnected(
   clearTimeout(entry.timer)
   room.disconnected.delete(clientId)
 
-  const recovered = { ...entry.player, ws: newWs }
+  const recovered = { ...entry.player, ws: newWs, isSpectator }
   room.players.set(clientId, recovered)
   return recovered
 }
