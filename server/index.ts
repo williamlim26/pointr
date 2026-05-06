@@ -44,7 +44,7 @@ function handleJoin(
   }
 
   // Attempt to recover a recently-disconnected session
-  const recovered = recoverDisconnected(room, clientId, ws)
+  const recovered = recoverDisconnected(room, clientId, ws, isSpectator)
   if (recovered) {
     ws.data.clientId = clientId
     ws.data.roomId = roomId

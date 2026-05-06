@@ -172,6 +172,13 @@ export default function App() {
     send({ type: "set_story", story })
   }, [send])
 
+  const leaveRoom = useCallback(() => {
+    hasJoinedRef.current = false
+    isSpectatorRef.current = false
+    setJoined(false)
+    setMyVote(null)
+  }, [])
+
   if (screen === "not-found") {
     return (
       <div style={styles.overlay}>
@@ -221,6 +228,7 @@ export default function App() {
         state={gameState}
         myClientId={clientId.current}
         onReset={reset}
+        onLeave={leaveRoom}
       />
     )
   }
@@ -234,6 +242,7 @@ export default function App() {
       onVote={vote}
       onReveal={reveal}
       onSetStory={setStory}
+      onLeave={leaveRoom}
     />
   )
 }

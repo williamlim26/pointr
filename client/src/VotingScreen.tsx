@@ -11,9 +11,10 @@ interface Props {
   onVote: (value: number | "?") => void
   onReveal: () => void
   onSetStory: (story: string) => void
+  onLeave: () => void
 }
 
-export default function VotingScreen({ state, myClientId, myVote, isSpectator, onVote, onReveal, onSetStory }: Props) {
+export default function VotingScreen({ state, myClientId, myVote, isSpectator, onVote, onReveal, onSetStory, onLeave }: Props) {
   const { numericVoteCount, questionCount, totalPlayers, story, facilitatorClientId } = state
   const totalVoted = numericVoteCount + questionCount
   const isFacilitator = facilitatorClientId === myClientId
@@ -92,6 +93,9 @@ export default function VotingScreen({ state, myClientId, myVote, isSpectator, o
         <div style={s.footer}>
           <button style={s.copyBtn} onClick={copyLink}>
             {copied ? "Copied!" : "Copy invite link"}
+          </button>
+          <button style={s.leaveBtn} onClick={onLeave}>
+            Change role
           </button>
           <span style={s.voteCount}>
             {totalVoted} / {totalPlayers} voted
@@ -184,6 +188,15 @@ const s: Record<string, React.CSSProperties> = {
     padding: "10px 16px",
     background: "transparent",
     color: "#666",
+    border: "1px solid #2a2d3a",
+    borderRadius: 8,
+    fontSize: 13,
+    cursor: "pointer",
+  },
+  leaveBtn: {
+    padding: "10px 16px",
+    background: "transparent",
+    color: "#555",
     border: "1px solid #2a2d3a",
     borderRadius: 8,
     fontSize: 13,
