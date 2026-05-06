@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function VotingScreen({ state, myClientId, myVote, isSpectator, onVote, onReveal, onSetStory, onLeave, onExit }: Props) {
-  const { numericVoteCount, questionCount, totalPlayers, story, facilitatorClientId } = state
+  const { numericVoteCount, questionCount, totalPlayers, story, facilitatorClientId, roomName } = state
   const totalVoted = numericVoteCount + questionCount
   const isFacilitator = facilitatorClientId === myClientId
   const storyRef = useRef<HTMLInputElement>(null)
@@ -55,6 +55,7 @@ export default function VotingScreen({ state, myClientId, myVote, isSpectator, o
       <PlayerList state={state} myClientId={myClientId} />
 
       <main style={s.main} className="room-main">
+        {roomName && <h1 style={s.roomName}>{roomName}</h1>}
         {isFacilitator && (
           <div style={s.facilitatorBanner}>
             ✦ You're facilitating this session
@@ -143,6 +144,14 @@ const s: Record<string, React.CSSProperties> = {
     gap: 40,
     padding: "32px 48px",
     overflowY: "auto",
+  },
+  roomName: {
+    fontSize: 28,
+    fontWeight: 700,
+    color: "#e8eaf0",
+    letterSpacing: -0.5,
+    margin: 0,
+    textAlign: "center",
   },
   facilitatorBanner: {
     fontSize: 12,
