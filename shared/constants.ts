@@ -11,3 +11,4 @@ export const DISCONNECT_GRACE_PERIOD_MS = 30_000        // 30 seconds
 
 export const LS_CLIENT_ID = "pp-id"
 export const LS_NAME = "pp-name"
+export const LS_IS_SPECTATOR = "pp-spectator"

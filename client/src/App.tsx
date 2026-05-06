@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { LS_CLIENT_ID, LS_NAME } from "../../shared/constants"
+import { LS_CLIENT_ID, LS_IS_SPECTATOR, LS_NAME } from "../../shared/constants"
 import type { GameState } from "./types"
 import HomeScreen from "./HomeScreen"
 import JoinScreen from "./JoinScreen"
@@ -43,21 +43,25 @@ const WS_URL =
 const BACKOFF_STEPS = [1000, 2000, 4000, 10000]
 
 export default function App() {
+  const _roomId = getRoomIdFromUrl()
+  const _savedName = localStorage.getItem(LS_NAME) ?? ""
+  const _autoJoin = !!(_roomId && _savedName)
+
   // "home" = landing, "join" = name/spectator entry, "room" = in the game, "not-found" = bad room URL
   const [screen, setScreen] = useState<"home" | "join" | "room" | "not-found">(
-    getRoomIdFromUrl() ? "join" : isRoomPath() ? "not-found" : "home"
+    _roomId ? (_autoJoin ? "room" : "join") : isRoomPath() ? "not-found" : "home"
   )
-  const [joined, setJoined] = useState(false)
+  const [joined, setJoined] = useState(_autoJoin)
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [connected, setConnected] = useState(false)
   const [myVote, setMyVote] = useState<number | "?" | null>(null)
 
-  const roomIdRef = useRef(getRoomIdFromUrl() ?? "")
+  const roomIdRef = useRef(_roomId ?? "")
   const roomNameRef = useRef(getRoomNameFromUrl())
   const clientId = useRef(getOrCreateClientId())
-  const nameRef = useRef(localStorage.getItem(LS_NAME) ?? "")
-  const hasJoinedRef = useRef(false)
-  const isSpectatorRef = useRef(false)
+  const nameRef = useRef(_savedName)
+  const hasJoinedRef = useRef(_autoJoin)
+  const isSpectatorRef = useRef(localStorage.getItem(LS_IS_SPECTATOR) === "true")
   const backoffIdx = useRef(0)
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
@@ -145,6 +149,7 @@ export default function App() {
     hasJoinedRef.current = true
     isSpectatorRef.current = isSpectator
     localStorage.setItem(LS_NAME, name)
+    localStorage.setItem(LS_IS_SPECTATOR, String(isSpectator))
     send({
       type: "join",
       roomId: roomIdRef.current,

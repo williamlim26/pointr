@@ -10,7 +10,8 @@ interface Props {
 }
 
 export default function RevealedScreen({ state, myClientId, onReset, onLeave }: Props) {
-  const { median, players, questionCount, story } = state
+  const { median, players, questionCount, story, facilitatorClientId } = state
+  const isFacilitator = facilitatorClientId === myClientId
   const [nextStory, setNextStory] = useState("")
 
   const numericVotes = players
@@ -77,19 +78,21 @@ export default function RevealedScreen({ state, myClientId, onReset, onLeave }: 
           <p style={s.splitWarning}>{splitSummary()}</p>
         )}
 
-        <form onSubmit={handleReset} style={s.resetForm}>
-          <input
-            style={s.nextInput}
-            type="text"
-            placeholder="Next story (optional)"
-            value={nextStory}
-            onChange={(e) => setNextStory(e.target.value)}
-            maxLength={140}
-          />
-          <button style={s.nextBtn} type="submit">
-            Next story
-          </button>
-        </form>
+        {isFacilitator && (
+          <form onSubmit={handleReset} style={s.resetForm}>
+            <input
+              style={s.nextInput}
+              type="text"
+              placeholder="Next story (optional)"
+              value={nextStory}
+              onChange={(e) => setNextStory(e.target.value)}
+              maxLength={140}
+            />
+            <button style={s.nextBtn} type="submit">
+              Next story
+            </button>
+          </form>
+        )}
 
         <button style={s.leaveBtn} onClick={onLeave}>
           Change role
