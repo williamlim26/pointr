@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function VotingScreen({ state, myClientId, myVote, isSpectator, onVote, onReveal, onSetStory, onLeave, onExit }: Props) {
-  const { numericVoteCount, questionCount, totalPlayers, story, facilitatorClientId, roomName } = state
+  const { numericVoteCount, questionCount, totalPlayers, story, facilitatorClientId } = state
   const totalVoted = numericVoteCount + questionCount
   const isFacilitator = facilitatorClientId === myClientId
   const storyRef = useRef<HTMLInputElement>(null)
@@ -55,7 +55,6 @@ export default function VotingScreen({ state, myClientId, myVote, isSpectator, o
       <PlayerList state={state} myClientId={myClientId} />
 
       <main style={s.main} className="room-main">
-        {roomName && <h1 style={s.roomName}>{roomName}</h1>}
         {isFacilitator && (
           <div style={s.facilitatorBanner}>
             ✦ You're facilitating this session
@@ -98,27 +97,31 @@ export default function VotingScreen({ state, myClientId, myVote, isSpectator, o
         )}
 
         <div style={s.footer}>
-          <button style={s.copyBtn} onClick={copyLink}>
-            {copied ? "Copied!" : "Copy invite link"}
-          </button>
-          <button style={s.leaveBtn} onClick={onLeave}>
-            Change role
-          </button>
-          {onExit && (
-            <button style={s.exitBtn} onClick={onExit}>
-              Exit room
+          <div style={s.footerLeft}>
+            <button style={s.copyBtn} onClick={copyLink}>
+              {copied ? "Copied!" : "Copy invite link"}
             </button>
-          )}
-          <span style={s.voteCount}>
-            {totalVoted} / {totalPlayers} voted
-          </span>
-          {isFacilitator ? (
-            <button style={s.revealBtn} onClick={onReveal}>
-              Reveal votes
+            <button style={s.leaveBtn} onClick={onLeave}>
+              Change role
             </button>
-          ) : (
-            <span style={s.waitingHint}>Waiting for facilitator to reveal</span>
-          )}
+            {onExit && (
+              <button style={s.exitBtn} onClick={onExit}>
+                Exit room
+              </button>
+            )}
+          </div>
+          <div style={s.footerRight}>
+            <span style={s.voteCount}>
+              {totalVoted} / {totalPlayers} voted
+            </span>
+            {isFacilitator ? (
+              <button style={s.revealBtn} onClick={onReveal}>
+                Reveal votes
+              </button>
+            ) : (
+              <span style={s.waitingHint}>Waiting for facilitator to reveal</span>
+            )}
+          </div>
         </div>
       </main>
     </div>
@@ -140,13 +143,6 @@ const s: Record<string, React.CSSProperties> = {
     gap: 40,
     padding: "32px 48px",
     overflowY: "auto",
-  },
-  roomName: {
-    fontSize: 22,
-    fontWeight: 700,
-    color: "#e8eaf0",
-    letterSpacing: -0.3,
-    margin: 0,
   },
   facilitatorBanner: {
     fontSize: 12,
@@ -206,7 +202,20 @@ const s: Record<string, React.CSSProperties> = {
   footer: {
     display: "flex",
     alignItems: "center",
-    gap: 24,
+    justifyContent: "space-between",
+    width: "100%",
+    maxWidth: 700,
+    gap: 16,
+  },
+  footerLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+  footerRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
   },
   voteCount: {
     fontSize: 14,

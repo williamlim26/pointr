@@ -89,7 +89,7 @@ const s: Record<string, React.CSSProperties> = {
   },
   roomName: {
     fontSize: 15,
-    color: "#7db8f7",
+    color: "#a8acb8",
     textAlign: "center",
     fontWeight: 500,
     marginTop: -12,

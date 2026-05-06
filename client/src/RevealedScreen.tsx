@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function RevealedScreen({ state, myClientId, onReset, onLeave, onExit }: Props) {
-  const { median, players, questionCount, story, facilitatorClientId, roomName } = state
+  const { median, players, questionCount, story, facilitatorClientId } = state
   const isFacilitator = facilitatorClientId === myClientId
 
   const [nextStory, setNextStory] = useState("")
@@ -55,7 +55,6 @@ export default function RevealedScreen({ state, myClientId, onReset, onLeave, on
       <PlayerList state={state} myClientId={myClientId} />
 
       <main style={s.main} className="room-main">
-        {roomName && <h1 style={s.roomName}>{roomName}</h1>}
         {isFacilitator && (
           <div style={s.facilitatorBanner}>
             ✦ You're facilitating this session
@@ -102,14 +101,16 @@ export default function RevealedScreen({ state, myClientId, onReset, onLeave, on
           </form>
         )}
 
-        <button style={s.leaveBtn} onClick={onLeave}>
-          Change role
-        </button>
-        {onExit && (
-          <button style={s.exitBtn} onClick={onExit}>
-            Exit room
+        <div style={s.actionsRow}>
+          <button style={s.leaveBtn} onClick={onLeave}>
+            Change role
           </button>
-        )}
+          {onExit && (
+            <button style={s.exitBtn} onClick={onExit}>
+              Exit room
+            </button>
+          )}
+        </div>
       </main>
     </div>
   )
@@ -120,13 +121,6 @@ const s: Record<string, React.CSSProperties> = {
     display: "flex",
     height: "100vh",
     overflow: "hidden",
-  },
-  roomName: {
-    fontSize: 22,
-    fontWeight: 700,
-    color: "#e8eaf0",
-    letterSpacing: -0.3,
-    margin: 0,
   },
   main: {
     flex: 1,
@@ -228,6 +222,11 @@ const s: Record<string, React.CSSProperties> = {
     borderRadius: 8,
     fontSize: 13,
     cursor: "pointer",
+  },
+  actionsRow: {
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
   },
   facilitatorBanner: {
     fontSize: 12,
