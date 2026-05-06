@@ -13,6 +13,7 @@ interface Props {
 export default function RevealedScreen({ state, myClientId, onReset, onLeave, onExit }: Props) {
   const { median, players, questionCount, story, facilitatorClientId } = state
   const isFacilitator = facilitatorClientId === myClientId
+
   const [nextStory, setNextStory] = useState("")
 
   const numericVotes = players
@@ -54,6 +55,11 @@ export default function RevealedScreen({ state, myClientId, onReset, onLeave, on
       <PlayerList state={state} myClientId={myClientId} />
 
       <main style={s.main} className="room-main">
+        {isFacilitator && (
+          <div style={s.facilitatorBanner}>
+            ✦ You're facilitating this session
+          </div>
+        )}
         {story && <p style={s.story}>{story}</p>}
 
         <div style={s.medianBlock}>
@@ -214,5 +220,15 @@ const s: Record<string, React.CSSProperties> = {
     borderRadius: 8,
     fontSize: 13,
     cursor: "pointer",
+  },
+  facilitatorBanner: {
+    fontSize: 12,
+    fontWeight: 600,
+    letterSpacing: 0.5,
+    color: "#f59e0b",
+    background: "rgba(245,158,11,0.08)",
+    border: "1px solid rgba(245,158,11,0.2)",
+    borderRadius: 6,
+    padding: "6px 14px",
   },
 }

@@ -6,7 +6,7 @@ interface Props {
 }
 
 export default function PlayerList({ state, myClientId }: Props) {
-  const { players, phase, median } = state
+  const { players, phase, median, facilitatorClientId } = state
 
   return (
     <aside style={s.aside} className="player-sidebar">
@@ -19,6 +19,7 @@ export default function PlayerList({ state, myClientId }: Props) {
             phase={phase}
             median={median}
             isMe={p.clientId === myClientId}
+            isFacilitator={p.clientId === facilitatorClientId}
           />
         ))}
       </ul>
@@ -31,11 +32,13 @@ function PlayerRow({
   phase,
   median,
   isMe,
+  isFacilitator,
 }: {
   player: PlayerView
   phase: "voting" | "revealed"
   median: number | null
   isMe: boolean
+  isFacilitator: boolean
 }) {
   const isOutlier =
     phase === "revealed" &&
@@ -52,6 +55,7 @@ function PlayerRow({
         {player.name}
         {isMe && <span style={s.youBadge}> you</span>}
         {player.isSpectator && <span style={s.spectatorBadge}> 👁</span>}
+        {isFacilitator && <span style={s.facilitatorBadge}> ✦</span>}
       </span>
       {!player.isSpectator && (
         <span style={{ ...s.vote, ...(isOutlier ? s.outlier : {}) }}>
@@ -131,6 +135,10 @@ const s: Record<string, React.CSSProperties> = {
   spectatorBadge: {
     fontSize: 11,
     opacity: 0.5,
+  },
+  facilitatorBadge: {
+    fontSize: 11,
+    color: "#f59e0b",
   },
   vote: {
     fontSize: 14,

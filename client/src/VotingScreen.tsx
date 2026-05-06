@@ -55,6 +55,11 @@ export default function VotingScreen({ state, myClientId, myVote, isSpectator, o
       <PlayerList state={state} myClientId={myClientId} />
 
       <main style={s.main} className="room-main">
+        {isFacilitator && (
+          <div style={s.facilitatorBanner}>
+            ✦ You're facilitating this session
+          </div>
+        )}
         <div style={s.storyRow}>
           <input
             ref={storyRef}
@@ -134,6 +139,16 @@ const s: Record<string, React.CSSProperties> = {
     gap: 40,
     padding: "32px 48px",
     overflowY: "auto",
+  },
+  facilitatorBanner: {
+    fontSize: 12,
+    fontWeight: 600,
+    letterSpacing: 0.5,
+    color: "#f59e0b",
+    background: "rgba(245,158,11,0.08)",
+    border: "1px solid rgba(245,158,11,0.2)",
+    borderRadius: 6,
+    padding: "6px 14px",
   },
   storyRow: {
     width: "100%",
