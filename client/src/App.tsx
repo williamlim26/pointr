@@ -108,6 +108,7 @@ export default function App() {
           setScreen("room")
           const me = state.players.find((p) => p.clientId === clientId.current)
           if (me && state.phase === "revealed") setMyVote(me.vote)
+          else if (state.phase === "voting") setMyVote(null)
         }
 
         if (msg.type === "error") {
