@@ -48,8 +48,8 @@ export default function App() {
   const _savedRoomId = localStorage.getItem(LS_ROOM_ID) ?? ""
   const _autoJoin = !!(_roomId && _savedName && _roomId === _savedRoomId)
 
-  // "home" = landing, "join" = name/spectator entry, "room" = in the game, "not-found" = bad room URL
-  const [screen, setScreen] = useState<"home" | "join" | "room" | "not-found">(
+  // "home" = landing, "join" = name/spectator entry, "room" = in the game, "not-found" = bad room URL, "session_ended" = facilitator closed the room
+  const [screen, setScreen] = useState<"home" | "join" | "room" | "not-found" | "session_ended">(
     _roomId ? (_autoJoin ? "room" : "join") : isRoomPath() ? "not-found" : "home"
   )
   const [joined, setJoined] = useState(_autoJoin)
@@ -63,6 +63,7 @@ export default function App() {
   const nameRef = useRef(_savedName)
   const hasJoinedRef = useRef(_autoJoin)
   const isSpectatorRef = useRef(localStorage.getItem(LS_IS_SPECTATOR) === "true")
+  const facilitatorRef = useRef<string | null>(null)
   const backoffIdx = useRef(0)
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
@@ -105,6 +106,7 @@ export default function App() {
 
         if (msg.type === "state") {
           const state = msg as unknown as GameState
+          facilitatorRef.current = state.facilitatorClientId
           setGameState(state)
           setScreen("room")
           const me = state.players.find((p) => p.clientId === clientId.current)
@@ -121,7 +123,11 @@ export default function App() {
           localStorage.removeItem(LS_IS_SPECTATOR)
           localStorage.removeItem(LS_CLIENT_ID)
           localStorage.removeItem(LS_ROOM_ID)
-          window.location.href = "/"
+          if (facilitatorRef.current === clientId.current) {
+            window.location.href = "/"
+          } else {
+            setScreen("session_ended")
+          }
         }
       }
 
@@ -219,6 +225,21 @@ export default function App() {
     )
   }
 
+  if (screen === "session_ended") {
+    return (
+      <div style={styles.overlay}>
+        <div style={{ textAlign: "center", maxWidth: 360 }}>
+          <p style={{ fontSize: 32, marginBottom: 12 }}>🚪</p>
+          <p style={{ color: "#e8eaf0", fontSize: 20, fontWeight: 600, marginBottom: 12 }}>Session ended</p>
+          <p style={{ color: "#888", fontSize: 14, lineHeight: 1.6, marginBottom: 28 }}>
+            The facilitator has closed this room. The session is no longer available.
+          </p>
+          <a href="/" style={styles.homeBtn}>Back to home</a>
+        </div>
+      </div>
+    )
+  }
+
   if (screen === "home") {
     return <HomeScreen onCreateRoom={createRoom} />
   }
@@ -290,5 +311,15 @@ const styles = {
     color: "#888",
     fontSize: 16,
     letterSpacing: 0.5,
+  } as React.CSSProperties,
+  homeBtn: {
+    display: "inline-block",
+    padding: "10px 24px",
+    background: "#4f8ef7",
+    color: "#fff",
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    textDecoration: "none",
   } as React.CSSProperties,
 }
