@@ -49,10 +49,10 @@ export default function VotingScreen({ state, myClientId, myVote, isSpectator, o
   }
 
   return (
-    <div style={s.layout}>
+    <div style={s.layout} className="room-layout">
       <PlayerList state={state} myClientId={myClientId} />
 
-      <main style={s.main}>
+      <main style={s.main} className="room-main">
         <div style={s.storyRow}>
           <input
             ref={storyRef}

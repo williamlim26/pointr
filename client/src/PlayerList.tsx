@@ -9,7 +9,7 @@ export default function PlayerList({ state, myClientId }: Props) {
   const { players, phase, median } = state
 
   return (
-    <aside style={s.aside}>
+    <aside style={s.aside} className="player-sidebar">
       <h2 style={s.heading}>Players <span style={s.count}>{players.length}</span></h2>
       <ul style={s.list}>
         {players.map((p) => (

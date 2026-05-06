@@ -47,10 +47,10 @@ export default function RevealedScreen({ state, myClientId, onReset }: Props) {
   }
 
   return (
-    <div style={s.layout}>
+    <div style={s.layout} className="room-layout">
       <PlayerList state={state} myClientId={myClientId} />
 
-      <main style={s.main}>
+      <main style={s.main} className="room-main">
         {story && <p style={s.story}>{story}</p>}
 
         <div style={s.medianBlock}>

@@ -13,6 +13,38 @@
         min-height: 100vh;
       }
       #root { height: 100vh; }
+
+      @media (max-width: 640px) {
+        .room-layout {
+          flex-direction: column;
+          height: auto;
+          min-height: 100vh;
+          overflow: visible;
+        }
+        .player-sidebar {
+          width: 100% !important;
+          border-right: none !important;
+          border-bottom: 1px solid #2a2d3a;
+          padding: 12px 16px !important;
+          overflow-y: visible;
+          display: flex !important;
+          align-items: center;
+          gap: 12px;
+        }
+        .player-sidebar h2 { margin-bottom: 0 !important; }
+        .player-sidebar ul {
+          flex-direction: row !important;
+          flex-wrap: wrap;
+          gap: 6px !important;
+          align-items: center;
+        }
+        .player-sidebar li { padding: 4px 8px !important; min-height: auto !important; }
+        .room-main {
+          padding: 24px 16px !important;
+          gap: 24px !important;
+          justify-content: flex-start !important;
+        }
+      }
     </style>
   </head>
   <body>
